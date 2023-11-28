@@ -1,20 +1,31 @@
 (ns functional-tasks.core
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s])
+  (:require [clojure.math :as math])
+)
 
 ; TASK 1
 (s/def ::valid-trinary
   (s/and string?
          #(re-matches #"^[012]*$" %)))
 
-(defn convert-string-to-list [number]
-  (reverse (map #(Character/getNumericValue ^char %) number)))
+(defn calculate-value [value position]
+  "Calculates the decimal value of a digit at the required position "
+  {:pre [(s/assert integer? value)
+         (s/assert integer? position)]}
+  (long (* value (math/pow 3 position))))
 
-(defn convert-trinary-to-decimal [number]
-  {:pre [(s/valid? ::valid-trinary number)]}
-  (loop [trinary-number-list (convert-string-to-list number)
-         decimal-number 0]
+(defn trinary-conversion [trinary-number]
+  "Converts a trinary number into a lazy sequence and calculates the decimal equivalent using helper functions"
+  (if (s/valid? ::valid-trinary trinary-number) ;; check its a valid trinary
+    (loop [remaining-trinary (reverse (map #(Character/getNumericValue ^char %) trinary-number)) ;; lazy sequence
+           decimal-number 0
+           position 0]
+      (if-let [value (first remaining-trinary)]  ;; get the first digit in the remaining values and check if it is not nil
+        (recur
+          (rest remaining-trinary)
+          (+ decimal-number (calculate-value value position))
+          (inc position))
+        decimal-number))
+    0)) ;; invalid trinary, return 0
 
-  )
-)
-
-(defn -main [] ())
+(defn -main [] (println (trinary-conversion "876")))
