@@ -16,7 +16,7 @@
 
 (defn trinary-conversion [trinary-number]
   "Converts a trinary number into a lazy sequence and calculates the decimal equivalent using helper functions"
-  (if (s/valid? ::valid-trinary trinary-number) ;; check its a valid trinary
+  (if (s/valid? ::valid-trinary trinary-number) ;; check it is a valid trinary
     (loop [remaining-trinary (reverse (map #(Character/getNumericValue ^char %) trinary-number)) ;; lazy sequence
            decimal-number 0
            position 0]
