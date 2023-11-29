@@ -15,9 +15,26 @@
     (is (= 32091(trinary-conversion "1122000120")))
     (is (= 5693068 (trinary-conversion "101201020102101"))))
   (testing "with invalid data"
+    (is (= 0 (trinary-conversion 101)))
     (is (= 0 (trinary-conversion "")))
     (is (= 0 (trinary-conversion"7")))
     (is (= 0 (trinary-conversion "abc12")))))
+(deftest other-trinary-conversion-test
+  (testing "will return a number"
+    (is true (number? (other-trinary-conversion "101"))))
+  (testing "will work with small trinary numbers"
+    (is (= 1 (other-trinary-conversion  "1")))
+    (is (= 2 (other-trinary-conversion  "2")))
+    (is (= 3 (other-trinary-conversion "10")))
+    (is (= 14 (other-trinary-conversion  "112"))))
+  (testing "with work with large trinary numbers"
+    (is (= 32091(other-trinary-conversion "1122000120")))
+    (is (= 5693068 (other-trinary-conversion "101201020102101"))))
+  (testing "with invalid data"
+    (is (= 0 (trinary-conversion 101)))
+    (is (= 0 (other-trinary-conversion "")))
+    (is (= 0 (other-trinary-conversion"7")))
+    (is (= 0 (other-trinary-conversion "abc12")))))
 (deftest calculate-value-test
   (testing "will return a number"
     (is true (number? (calculate-value 1 0))))
@@ -37,4 +54,3 @@
     (is (= 39366 (calculate-value 2 9)))
     (is (= 20920706406 (calculate-value 2 21)))
   )
-

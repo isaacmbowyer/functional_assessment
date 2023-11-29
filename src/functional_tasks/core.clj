@@ -12,8 +12,7 @@
   "Calculates the decimal value of a digit at the required position "
   {:pre [(s/assert integer? value)
          (s/assert integer? position)]
-   :post [#(s/valid? number? %) ]
-  }
+   :post [#(s/valid? number? %) ]}
   (long (* value (math/pow 3 position))))
 
 (defn trinary-conversion [trinary-number]
@@ -31,4 +30,17 @@
         decimal-number))
     0)) ;; invalid trinary, return 0
 
-(defn -main [] (println (trinary-conversion "102012")))
+(defn other-trinary-conversion [trinary-number]
+  "Converts a trinary number into a lazy sequence and calculates the decimal equivalent using functions"
+  {:post [#(s/valid? number? %)]}
+  (if (s/valid? ::valid-trinary trinary-number)
+    (reduce + ;; total the decimal value
+      (map-indexed
+        (fn [position value] (calculate-value value position))
+        (reverse ;;  lazy sequence of trinary digits
+          (map #(Character/getNumericValue ^char %) trinary-number))))
+    0))   ;; invalid trinary, return 0
+
+;; TASK 2
+(defn -main [] (println (other-trinary-conversion "102012")))
+
