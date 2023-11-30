@@ -34,13 +34,32 @@
   "Converts a trinary number into a lazy sequence and calculates the decimal equivalent using functions"
   {:post [#(s/valid? number? %)]}
   (if (s/valid? ::valid-trinary trinary-number)
-    (reduce + ;; total the decimal value
-      (map-indexed
-        (fn [position value] (calculate-value value position))
-        (reverse ;;  lazy sequence of trinary digits
-          (map #(Character/getNumericValue ^char %) trinary-number))))
+    (->> trinary-number  ;; treading macro to tread result of expression
+         (map #(Character/getNumericValue ^char %)) ;; convert to lazy-sequence of digits
+         (reverse)
+         (map-indexed (fn [position value] (calculate-value value position))) ;; calculate decimal equivalent
+         (reduce +))
     0))   ;; invalid trinary, return 0
 
 ;; TASK 2
-(defn -main [] (println (other-trinary-conversion "102012")))
+(s/def ::valid-codons #{"AUG" "UUU" "UUC" "UUA" "UUG" "UCU" "UCC" "UCA" "UCG" "UAU" "UAC"
+                        "UGU" "UGC" "UGG" "UAA" "UAG" "UGA"})
+(s/def ::valid-rna (s/and string? #(= 0 (mod (count %) 3))))
+
+(defn convert-codon [codon]
+  {:pre [#(s/valid? ::valid-codons %)]}
+  (let [codon-acids-map {
+      :AUG "Methionine"
+      :UUU "Phenylalanine" :UUC "Phenylalanine"
+      :UUA "Leucine" :UUG "Leucine"
+      :UCU "Serine" :UCC "Serine" :UCA "Serine" :UCG "Serine"
+      :UAU "Tyrosine" :UAC "Tyrosine"
+      :UGU "Cysteine" :UGC "Cysteine"
+      :UGG "Tryptophan"
+      :UAA "STOP" :UAG "STOP" :UGA "STOP"}]
+    (codon-acids-map codon)))
+
+
+
+(defn -main [] (println (convert-codon "UAA")))
 
