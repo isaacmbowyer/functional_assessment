@@ -54,3 +54,5 @@
     (is (= 39366 (calculate-value 2 9)))
     (is (= 20920706406 (calculate-value 2 21)))
   )
+
+;; TASK 2

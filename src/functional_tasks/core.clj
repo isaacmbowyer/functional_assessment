@@ -1,6 +1,7 @@
 (ns functional-tasks.core
   (:require [clojure.spec.alpha :as s])
   (:require [clojure.math :as math])
+  (:require [clojure.string :as str])
 )
 
 ; TASK 1
@@ -42,24 +43,43 @@
     0))   ;; invalid trinary, return 0
 
 ;; TASK 2
-(s/def ::valid-codons #{"AUG" "UUU" "UUC" "UUA" "UUG" "UCU" "UCC" "UCA" "UCG" "UAU" "UAC"
-                        "UGU" "UGC" "UGG" "UAA" "UAG" "UGA"})
 (s/def ::valid-rna (s/and string? #(= 0 (mod (count %) 3))))
+(def valid-codons #{"AUG" "UUU" "UUC" "UUA" "UUG" "UCU" "UCC" "UCA" "UCG"
+                     "UAU" "UAC" "UGU" "UGC" "UGG" "UAA" "UAG" "UGA"})
 
 (defn convert-codon [codon]
-  {:pre [#(s/valid? ::valid-codons %)]}
-  (let [codon-acids-map {
-      :AUG "Methionine"
-      :UUU "Phenylalanine" :UUC "Phenylalanine"
-      :UUA "Leucine" :UUG "Leucine"
-      :UCU "Serine" :UCC "Serine" :UCA "Serine" :UCG "Serine"
-      :UAU "Tyrosine" :UAC "Tyrosine"
-      :UGU "Cysteine" :UGC "Cysteine"
-      :UGG "Tryptophan"
-      :UAA "STOP" :UAG "STOP" :UGA "STOP"}]
-    (codon-acids-map codon)))
+  {:post [#(s/valid? string? %)]}
+  (if (contains? valid-codons codon)
+    (let [codon-acids-map {
+            :AUG "Methionine"
+            :UUU "Phenylalanine" :UUC "Phenylalanine"
+            :UUA "Leucine" :UUG "Leucine"
+            :UCU "Serine" :UCC "Serine" :UCA "Serine" :UCG "Serine"
+            :UAU "Tyrosine" :UAC "Tyrosine"
+            :UGU "Cysteine" :UGC "Cysteine"
+            :UGG "Tryptophan"
+            :UAA "STOP" :UAG "STOP" :UGA "STOP"}]
+      (get codon-acids-map (keyword codon)))
+    "" ;; invalid codon
+  ))
 
+(defn convert-rna [rna]
+  {:pre [#(s/valid? ::valid-rna %)]}
+  {:post [#(s/valid? set? %)]}
+  (->> rna
+       (partition 3)
+       (map #(apply str %))))
 
+(defn translate-rna [rna]
+  (if (s/valid? ::valid-rna rna)
+    (loop [codons (convert-rna rna)
+           proteins '()]
+      (let [current-protein (convert-codon (first codons))]
+        (cond
+          (or (empty? codons) (= current-protein "STOP")) proteins
+          (or (empty? current-protein) (contains? proteins current-protein)) (recur (rest codons) proteins)
+          :else (recur (rest codons) (concat proteins [current-protein]))
+          )))
+    '()))
 
-(defn -main [] (println (convert-codon "UAA")))
-
+(defn -main [] (println (translate-rna "AUGUUUUCUAUG")))
