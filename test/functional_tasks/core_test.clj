@@ -38,21 +38,56 @@
 (deftest calculate-value-test
   (testing "will return a number"
     (is true (number? (calculate-value 1 0))))
-  (testing "when passed a 0 as the value, should return back specified values")
+  (testing "when passed a 0 as the value, should return back specified values"
     (is (= 0 (calculate-value 0 0)))
     (is (= 0 (calculate-value 0 1)))
     (is (= 0 (calculate-value 0 9)))
-    (is (= 0 (calculate-value 0 21)))
-  (testing "when passed a 1 as the value, should return back specified values")
+    (is (= 0 (calculate-value 0 21))))
+  (testing "when passed a 1 as the value, should return back specified values"
     (is (= 1 (calculate-value 1 0)))
     (is (= 3 (calculate-value 1 1)))
     (is (= 19683 (calculate-value 1 9)))
-    (is (= 10460353203 (calculate-value 1 21)))
-  (testing "when passed a 2 as the value, should return back specified values")
+    (is (= 10460353203 (calculate-value 1 21))))
+  (testing "when passed a 2 as the value, should return back specified values"
     (is (= 2 (calculate-value 2 0)))
     (is (= 18 (calculate-value 2 2)))
     (is (= 39366 (calculate-value 2 9)))
-    (is (= 20920706406 (calculate-value 2 21)))
-  )
+    (is (= 20920706406 (calculate-value 2 21)))))
 
 ;; TASK 2
+(deftest convert-codon-test
+  (testing "will return a string"
+    (is true (string? (convert-codon "AUG"))))
+  (testing "will return an empty string for invalid codons"
+    (is true (= "" (convert-codon "BAH")))
+    (is true (= "" (convert-codon ""))))
+  (testing "will return Methionine acid for the codon"
+    (is true (= "Methionine" (convert-codon "AUG"))))
+  (testing "will return Phenylalanine acid for the codon"
+    (is true (= "Phenylalanine" (convert-codon "UUU")))
+    (is true (= "Phenylalanine" (convert-codon "UUC"))))
+  (testing "will return Leucine acid for the codon"
+    (is true (= "Leucine" (convert-codon "UUA")))
+    (is true (= "Leucine" (convert-codon "UUG"))))
+  (testing "will return Serine acid for the codon"
+    (is true (= "Serine" (convert-codon "UCU")))
+    (is true (= "Serine" (convert-codon "UCC")))
+    (is true (= "Serine" (convert-codon "UCA")))
+    (is true (= "Serine" (convert-codon "UCG"))))
+  (testing "will return Tyrosine acid for the codon"
+    (is true (= "Tyrosine" (convert-codon "UAU")))
+    (is true (= "Tyrosine" (convert-codon "UAC"))))
+  (testing "will return Cysteine acid for the codon"
+    (is true (= "Cysteine" (convert-codon "UGU")))
+    (is true (= "Cysteine" (convert-codon "UGC"))))
+  (testing "will return STOP for the codon"
+    (is true (= "STOP" (convert-codon "UAA")))
+    (is true (= "STOP" (convert-codon "UAG")))
+    (is true (= "STOP" (convert-codon "UGA")))))
+(deftest convert-rna-test
+  (testing "will return a lazy sequence"
+    (is true (instance? clojure.lang.LazySeq (convert-rna "AUGUUUUCU"))))
+
+  (testing "will return a list of codons"
+    (is true (= '("AUG" "UUU" "UCU") (convert-rna "AUGUUUUCU")))
+    (is true (= '("AUG" "UUU" "UCU" "AUG") (convert-rna "AUGUUUUCUAUG")))))

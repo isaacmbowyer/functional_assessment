@@ -1,7 +1,6 @@
 (ns functional-tasks.core
   (:require [clojure.spec.alpha :as s])
   (:require [clojure.math :as math])
-  (:require [clojure.string :as str])
 )
 
 ; TASK 1
@@ -17,6 +16,18 @@
   (long (* value (math/pow 3 position))))
 
 (defn trinary-conversion [trinary-number]
+  "Converts a trinary number into a lazy sequence and calculates the decimal equivalent using functions"
+  {:post [#(s/valid? number? %)]}
+  (if (s/valid? ::valid-trinary trinary-number)
+    (->> trinary-number  ;; treading macro to tread result of expression
+         (map #(Character/getNumericValue ^char %)) ;; convert to lazy-sequence of digits
+         (reverse)
+         (map-indexed (fn [position value] (calculate-value value position))) ;; calculate decimal equivalent
+         (reduce +))
+    0))   ;; invalid trinary, return 0
+
+;; this was my first one that I made, but created a better solution
+(defn other-trinary-conversion [trinary-number]
   "Converts a trinary number into a lazy sequence and calculates the decimal equivalent using helper functions"
   {:post [#(s/valid? number? %)]}
   (if (s/valid? ::valid-trinary trinary-number) ;; check it is a valid trinary
@@ -31,44 +42,31 @@
         decimal-number))
     0)) ;; invalid trinary, return 0
 
-(defn other-trinary-conversion [trinary-number]
-  "Converts a trinary number into a lazy sequence and calculates the decimal equivalent using functions"
-  {:post [#(s/valid? number? %)]}
-  (if (s/valid? ::valid-trinary trinary-number)
-    (->> trinary-number  ;; treading macro to tread result of expression
-         (map #(Character/getNumericValue ^char %)) ;; convert to lazy-sequence of digits
-         (reverse)
-         (map-indexed (fn [position value] (calculate-value value position))) ;; calculate decimal equivalent
-         (reduce +))
-    0))   ;; invalid trinary, return 0
-
 ;; TASK 2
 (s/def ::valid-rna (s/and string? #(= 0 (mod (count %) 3))))
 (def valid-codons #{"AUG" "UUU" "UUC" "UUA" "UUG" "UCU" "UCC" "UCA" "UCG"
-                     "UAU" "UAC" "UGU" "UGC" "UGG" "UAA" "UAG" "UGA"})
+                    "UAU" "UAC" "UGU" "UGC" "UGG" "UAA" "UAG" "UGA"})
 
 (defn convert-codon [codon]
   {:post [#(s/valid? string? %)]}
   (if (contains? valid-codons codon)
     (let [codon-acids-map {
-            :AUG "Methionine"
-            :UUU "Phenylalanine" :UUC "Phenylalanine"
-            :UUA "Leucine" :UUG "Leucine"
-            :UCU "Serine" :UCC "Serine" :UCA "Serine" :UCG "Serine"
-            :UAU "Tyrosine" :UAC "Tyrosine"
-            :UGU "Cysteine" :UGC "Cysteine"
-            :UGG "Tryptophan"
-            :UAA "STOP" :UAG "STOP" :UGA "STOP"}]
+                           :AUG "Methionine"
+                           :UUU "Phenylalanine" :UUC "Phenylalanine"
+                           :UUA "Leucine" :UUG "Leucine"
+                           :UCU "Serine" :UCC "Serine" :UCA "Serine" :UCG "Serine"
+                           :UAU "Tyrosine" :UAC "Tyrosine"
+                           :UGU "Cysteine" :UGC "Cysteine"
+                           :UGG "Tryptophan"
+                           :UAA "STOP" :UAG "STOP" :UGA "STOP"}]
       (get codon-acids-map (keyword codon)))
-    "" ;; invalid codon
-  ))
+    "")) ;; invalid codon
 
 (defn convert-rna [rna]
-  {:pre [#(s/valid? ::valid-rna %)]}
-  {:post [#(s/valid? set? %)]}
+  {:post [#(s/valid? seq? %)]}
   (->> rna
-       (partition 3)
-       (map #(apply str %))))
+    (partition 3)
+    (map #(apply str %))))
 
 (defn translate-rna [rna]
   (if (s/valid? ::valid-rna rna)
@@ -77,9 +75,9 @@
       (let [current-protein (convert-codon (first codons))]
         (cond
           (or (empty? codons) (= current-protein "STOP")) proteins
-          (or (empty? current-protein) (contains? proteins current-protein)) (recur (rest codons) proteins)
-          :else (recur (rest codons) (concat proteins [current-protein]))
-          )))
+          (or (empty? current-protein) (some #{current-protein} proteins)) (recur (rest codons) proteins)
+          :else  (recur (rest codons) (concat proteins [current-protein])))))
     '()))
 
-(defn -main [] (println (translate-rna "AUGUUUUCUAUG")))
+(defn -main [] (println (translate-rna "AUGUUUUGG")))
+
